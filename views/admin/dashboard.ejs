@@ -1,0 +1,124 @@
+<%
+    const content = `
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2 class="card-text">${users ? users.length : 0}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Buses</h5>
+                    <h2 class="card-text">${buses ? buses.length : 0}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <h2 class="card-text">${bookings ? bookings.length : 0}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Active Buses</h5>
+                    <h2 class="card-text">${buses ? buses.filter(bus => bus.isActive).length : 0}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Bookings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>User</th>
+                                    <th>Bus</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bookings && bookings.length > 0 ? bookings.slice(0, 5).map(booking => `
+                                    <tr>
+                                        <td>${booking.id}</td>
+                                        <td>${booking.user ? booking.user.firstName + ' ' + booking.user.lastName : 'N/A'}</td>
+                                        <td>${booking.bus ? booking.bus.busName : 'N/A'}</td>
+                                        <td>${new Date(booking.createdAt).toLocaleDateString()}</td>
+                                        <td>
+                                            <span class="badge bg-${booking.status === 'confirmed' ? 'success' : 'warning'}">
+                                                ${booking.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('') : `
+                                    <tr>
+                                        <td colspan="5" class="text-center">No recent bookings</td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Buses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Bus Number</th>
+                                    <th>Name</th>
+                                    <th>Route</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${buses && buses.length > 0 ? buses.slice(0, 5).map(bus => `
+                                    <tr>
+                                        <td>${bus.busNumber}</td>
+                                        <td>${bus.busName}</td>
+                                        <td>${bus.source} - ${bus.destination}</td>
+                                        <td>${bus.busType}</td>
+                                        <td>
+                                            <span class="badge bg-${bus.isActive ? 'success' : 'danger'}">
+                                                ${bus.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('') : `
+                                    <tr>
+                                        <td colspan="5" class="text-center">No buses found</td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+%>
+<%- include('../layouts/admin-layout', { content }) %> 

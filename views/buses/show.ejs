@@ -1,0 +1,117 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Bus Details</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bus Information -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><%= bus.busNumber %></h5>
+                    <h6 class="card-subtitle mb-3 text-muted"><%= bus.busType %></h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Source:</strong> <%= bus.source %></p>
+                            <p><strong>Destination:</strong> <%= bus.destination %></p>
+                            <p><strong>Departure Time:</strong> <%= new Date(bus.departureTime).toLocaleString() %></p>
+                            <p><strong>Arrival Time:</strong> <%= new Date(bus.arrivalTime).toLocaleString() %></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Available Seats:</strong> <%= bus.totalSeats - bus.bookedSeats %></p>
+                            <p><strong>Total Seats:</strong> <%= bus.totalSeats %></p>
+                            <p><strong>Fare:</strong> ₹<%= bus.fare %></p>
+                            <p><strong>Duration:</strong> <%= bus.duration %> hours</p>
+                        </div>
+                    </div>
+
+                    <% if (user && user.role === 'admin') { %>
+                        <div class="mt-4">
+                            <a href="/buses/<%= bus.id %>/edit" class="btn btn-primary">Edit Bus</a>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteBusModal">
+                                Delete Bus
+                            </button>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Seat Layout -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Seat Layout</h5>
+                    <div class="seat-layout mt-3">
+                        <% const seatLayout = JSON.parse(bus.seatLayout || '{}'); %>
+                        <% for(let row = 1; row <= Math.ceil(bus.totalSeats / 4); row++) { %>
+                            <div class="row mb-2">
+                                <% for(let col = 1; col <= 4; col++) { %>
+                                    <% const seatNumber = (row - 1) * 4 + col; %>
+                                    <% if (seatNumber <= bus.totalSeats) { %>
+                                        <% const seatStatus = seatLayout[seatNumber] || 'available'; %>
+                                        <div class="col-3">
+                                            <div class="seat <%= seatStatus %>" data-seat-number="<%= seatNumber %>">
+                                                Seat <%= seatNumber %>
+                                            </div>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="col-3"></div>
+                                    <% } %>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Section -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Book This Bus</h5>
+                    <% if (bus.totalSeats - bus.bookedSeats > 0) { %>
+                        <p class="card-text">
+                            <strong>Available Seats:</strong> <%= bus.totalSeats - bus.bookedSeats %><br>
+                            <strong>Fare per Seat:</strong> ₹<%= bus.fare %>
+                        </p>
+                        <a href="/bookings/new?busId=<%= bus.id %>" class="btn btn-success btn-lg w-100">Book Now</a>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            This bus is fully booked.
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Bus Modal -->
+<% if (user && user.role === 'admin') { %>
+    <div class="modal fade" id="deleteBusModal" tabindex="-1" aria-labelledby="deleteBusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteBusModalLabel">Delete Bus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this bus? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/buses/<%= bus.id %>?_method=DELETE" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<%- include('../partials/footer') %> 

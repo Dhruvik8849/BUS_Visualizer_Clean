@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Complete Your Payment</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Booking Details</h5>
+                            <p><strong>Bus:</strong> <%= booking.bus.busName %> (<%= booking.bus.busNumber %>)</p>
+                            <p><strong>From:</strong> <%= booking.bus.source %></p>
+                            <p><strong>To:</strong> <%= booking.bus.destination %></p>
+                            <p><strong>Date:</strong> <%= new Date(booking.travelDate).toLocaleDateString() %></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Payment Summary</h5>
+                            <p><strong>Seats:</strong> <%= booking.seats.join(', ') %></p>
+                            <p><strong>Total Amount:</strong> ₹<%= booking.totalAmount %></p>
+                        </div>
+                    </div>
+
+                    <form id="payment-form">
+                        <div id="card-element" class="form-control mb-3"></div>
+                        <div id="card-errors" class="alert alert-danger d-none" role="alert"></div>
+                        <button type="submit" class="btn btn-primary w-100">Pay Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('<%= process.env.STRIPE_PUBLISHABLE_KEY %>');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+    const cardErrors = document.getElementById('card-errors');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const { error, paymentMethod } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+        });
+
+        if (error) {
+            cardErrors.textContent = error.message;
+            cardErrors.classList.remove('d-none');
+        } else {
+            try {
+                const response = await fetch('/payments/create-payment-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bookingId: '<%= booking.id %>'
+                    }),
+                });
+
+                const { clientSecret } = await response.json();
+
+                const { error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: paymentMethod.id,
+                });
+
+                if (confirmError) {
+                    cardErrors.textContent = confirmError.message;
+                    cardErrors.classList.remove('d-none');
+                } else {
+                    // Payment successful
+                    window.location.href = `/payments/success/<%= booking.id %>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                cardErrors.textContent = 'An error occurred. Please try again.';
+                cardErrors.classList.remove('d-none');
+            }
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %> 

@@ -1,0 +1,71 @@
+<%- include('../layouts/admin-layout') %>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>All Bookings</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Bus</th>
+                        <th>Seats</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Booked On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% bookings.forEach(booking => { %>
+                        <tr>
+                            <td><%= booking.id %></td>
+                            <td><%= booking.user.firstName %> <%= booking.user.lastName %></td>
+                            <td><%= booking.bus.busNumber %></td>
+                            <td><%= booking.seats %></td>
+                            <td>₹<%= booking.totalAmount %></td>
+                            <td>
+                                <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : 'warning' %>">
+                                    <%= booking.status %>
+                                </span>
+                            </td>
+                            <td><%= new Date(booking.createdAt).toLocaleString() %></td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-booking" data-booking-id="<%= booking.id %>">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger cancel-booking" data-booking-id="<%= booking.id %>">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.view-booking').forEach(button => {
+    button.addEventListener('click', function() {
+        const bookingId = this.dataset.bookingId;
+        alert('View booking: ' + bookingId);
+    });
+});
+
+document.querySelectorAll('.cancel-booking').forEach(button => {
+    button.addEventListener('click', function() {
+        const bookingId = this.dataset.bookingId;
+        if (confirm('Are you sure you want to cancel this booking?')) {
+            alert('Cancel booking: ' + bookingId);
+        }
+    });
+});
+</script> 

@@ -1,0 +1,91 @@
+<head>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="text-center mb-4">Search Buses</h1>
+            
+            <!-- Search Form -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form action="/buses" method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="source" class="form-label">From</label>
+                            <input type="text" class="form-control" id="source" name="source" value="<%= source || '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="destination" class="form-label">To</label>
+                            <input type="text" class="form-control" id="destination" name="destination" value="<%= destination || '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="<%= date || '' %>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="passengers" class="form-label">Passengers</label>
+                            <input type="number" class="form-control" id="passengers" name="passengers" min="1" value="<%= passengers || 1 %>" required>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary">Search Buses</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <% if (typeof buses !== 'undefined' && buses.length > 0) { %>
+                <div class="row">
+                    <% buses.forEach(bus => { %>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h5 class="card-title mb-1"><%= bus.busName %></h5>
+                                            <h6 class="card-subtitle text-muted"><%= bus.busNumber %> - <%= bus.busType %></h6>
+                                        </div>
+                                        <span class="badge bg-success">
+                                            <%= bus.totalSeats - bus.bookedSeats %> seats available
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>From:</strong> <%= bus.source %></p>
+                                            <p class="mb-1"><strong>To:</strong> <%= bus.destination %></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Departure:</strong> <%= bus.formattedDepartureTime %></p>
+                                            <p class="mb-1"><strong>Arrival:</strong> <%= bus.formattedArrivalTime %></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h4 class="mb-0">₹<%= bus.fare %></h4>
+                                            <small class="text-muted">per seat</small>
+                                        </div>
+                                        <a href="/bookings/new?busId=<%= bus.id %>&date=<%= date %>&passengers=<%= passengers %>" 
+                                           class="btn btn-primary">
+                                            Select Seats
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else if (typeof buses !== 'undefined') { %>
+                <div class="alert alert-info text-center">
+                    No buses found for your search criteria.
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %> 

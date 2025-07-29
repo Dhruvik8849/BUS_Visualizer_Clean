@@ -1,0 +1,59 @@
+/* Admin Panel Custom Styles */
+.table-responsive {
+    margin-top: 20px;
+}
+
+.action-buttons {
+    white-space: nowrap;
+}
+
+.search-box {
+    margin-bottom: 20px;
+}
+
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.btn-action {
+    margin-right: 5px;
+}
+
+.loading-spinner {
+    display: none;
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Toast notifications */
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+} 

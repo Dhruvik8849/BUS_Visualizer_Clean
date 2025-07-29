@@ -1,0 +1,149 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>My Bookings</h1>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <% if (user.role === 'admin') { %>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="/bookings" method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Status</option>
+                                    <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                    <option value="confirmed" <%= filters.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                                    <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" value="<%= filters.startDate || '' %>">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" value="<%= filters.endDate || '' %>">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="userId" class="form-label">User</label>
+                                <input type="text" class="form-control" id="userId" name="userId" value="<%= filters.userId || '' %>" placeholder="User ID">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                <a href="/bookings" class="btn btn-secondary">Clear Filters</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Bookings List -->
+    <div class="row">
+        <% if (bookings.length === 0) { %>
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    No bookings found.
+                </div>
+            </div>
+        <% } else { %>
+            <% bookings.forEach(booking => { %>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title">Booking #<%= booking.id %></h5>
+                                <span class="badge bg-<%= booking.status === 'confirmed' ? 'success' : booking.status === 'pending' ? 'warning' : 'danger' %>">
+                                    <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                </span>
+                            </div>
+                            <h6 class="card-subtitle mb-3 text-muted"><%= booking.Bus.busNumber %></h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>From:</strong> <%= booking.Bus.source %></p>
+                                    <p class="mb-1"><strong>To:</strong> <%= booking.Bus.destination %></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Departure:</strong> <%= new Date(booking.Bus.departureTime).toLocaleString() %></p>
+                                    <p class="mb-1"><strong>Arrival:</strong> <%= new Date(booking.Bus.arrivalTime).toLocaleString() %></p>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Seats:</strong> <%= JSON.parse(booking.seats).join(', ') %></p>
+                                    <p class="mb-1"><strong>Total Amount:</strong> ₹<%= booking.totalAmount %></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Booked On:</strong> <%= new Date(booking.createdAt).toLocaleString() %></p>
+                                    <% if (user.role === 'admin') { %>
+                                        <p class="mb-1"><strong>User:</strong> <%= booking.User.name %></p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/bookings/<%= booking.id %>" class="btn btn-primary">View Details</a>
+                            <% if (booking.status === 'pending' || booking.status === 'confirmed') { %>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal<%= booking.id %>">
+                                    Cancel Booking
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancel Modal -->
+                <% if (booking.status === 'pending' || booking.status === 'confirmed') { %>
+                    <div class="modal fade" id="cancelModal<%= booking.id %>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Cancel Booking</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to cancel this booking?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <form action="/bookings/<%= booking.id %>/cancel" method="POST">
+                                        <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% }) %>
+        <% } %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <% for(let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= currentPage == i ? 'active' : '' %>">
+                                <a class="page-link" href="/bookings?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>"><%= i %></a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %> 

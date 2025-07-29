@@ -1,0 +1,181 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Payment Checkout</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Booking Summary -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Booking Summary</h5>
+                    <h6 class="card-subtitle mb-3 text-muted"><%= booking.bus.busNumber %></h6>
+                    
+                    <div class="mb-3">
+                        <p><strong>From:</strong> <%= booking.bus.source %></p>
+                        <p><strong>To:</strong> <%= booking.bus.destination %></p>
+                        <p><strong>Departure:</strong> <%= new Date(booking.bus.departureTime).toLocaleString() %></p>
+                        <p><strong>Arrival:</strong> <%= new Date(booking.bus.arrivalTime).toLocaleString() %></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>Seats:</strong> <%= booking.seatDetails.map(s => s.seatNumber).join(', ') %></p>
+                        <p><strong>Total Amount:</strong> ₹<%= booking.totalAmount %></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passenger Details -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Passenger Details</h5>
+                    <% booking.seatDetails.forEach((seat, index) => { %>
+                        <div class="mb-3">
+                            <h6>Passenger <%= index + 1 %></h6>
+                            <p class="mb-1"><strong>Name:</strong> <%= seat.passengerName %></p>
+                            <p class="mb-1"><strong>Age:</strong> <%= seat.passengerAge %></p>
+                            <p class="mb-1"><strong>Gender:</strong> <%= seat.passengerGender %></p>
+                            <p class="mb-1"><strong>Seat:</strong> <%= seat.seatNumber %></p>
+                        </div>
+                        <% if (index < booking.seatDetails.length - 1) { %>
+                            <hr>
+                        <% } %>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Payment Details</h5>
+                    <form id="payment-form">
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Credit or debit card</label>
+                            <div id="card-element" class="form-control"></div>
+                            <div id="card-errors" class="invalid-feedback" role="alert"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="submit-button">
+                                Pay ₹<%= booking.totalAmount %>
+                            </button>
+                            <a href="/bookings/<%= booking.id %>" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('<%= stripePublicKey %>');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+
+    // Add card element to the form
+    card.mount('#card-element');
+
+    // Handle real-time validation errors
+    card.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+            displayError.style.display = 'block';
+        } else {
+            displayError.textContent = '';
+            displayError.style.display = 'none';
+        }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+
+        try {
+            const { paymentIntent, error } = await stripe.confirmCardPayment('<%= clientSecret %>', {
+                payment_method: {
+                    card: card,
+                    billing_details: {
+                        name: '<%= booking.seatDetails[0].passengerName %>'
+                    }
+                }
+            });
+
+            if (error) {
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = error.message;
+                errorElement.style.display = 'block';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Pay ₹<%= booking.totalAmount %>';
+            } else {
+                // Payment successful, update booking status
+                try {
+                    const response = await fetch('/payments/process/<%= booking.id %>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            paymentIntentId: paymentIntent.id
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/payments/success/<%= booking.id %>';
+                    } else {
+                        throw new Error(result.error || 'Failed to update booking status');
+                    }
+                } catch (error) {
+                    console.error('Error updating booking:', error);
+                    const errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = 'Payment successful but failed to update booking. Please contact support.';
+                    errorElement.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Pay ₹<%= booking.totalAmount %>';
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = 'An error occurred while processing your payment. Please try again.';
+            errorElement.style.display = 'block';
+            submitButton.disabled = false;
+            submitButton.textContent = 'Pay ₹<%= booking.totalAmount %>';
+        }
+    });
+});
+</script>
+
+<style>
+#card-element {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: white;
+}
+
+#card-errors {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
+
+<%- include('../partials/footer') %> 

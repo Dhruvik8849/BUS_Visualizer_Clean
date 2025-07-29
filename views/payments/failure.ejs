@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="fas fa-times-circle text-danger fa-5x"></i>
+                    </div>
+                    <h2 class="card-title mb-4">Payment Failed</h2>
+                    <p class="card-text mb-4">We couldn't process your payment. Please try again or contact support.</p>
+                    
+                    <div class="booking-details text-start mb-4">
+                        <h5>Booking Details</h5>
+                        <p><strong>Booking ID:</strong> <%= booking.id %></p>
+                        <p><strong>Bus:</strong> <%= booking.bus.busName %> (<%= booking.bus.busNumber %>)</p>
+                        <p><strong>From:</strong> <%= booking.bus.source %></p>
+                        <p><strong>To:</strong> <%= booking.bus.destination %></p>
+                        <p><strong>Date:</strong> <%= new Date(booking.travelDate).toLocaleDateString() %></p>
+                        <p><strong>Seats:</strong> <%= booking.seats.join(', ') %></p>
+                        <p><strong>Total Amount:</strong> ₹<%= booking.totalAmount %></p>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="/payments/<%= booking.id %>" class="btn btn-primary">Try Payment Again</a>
+                        <a href="/" class="btn btn-outline-primary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %> 

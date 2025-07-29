@@ -1,0 +1,323 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4" 
+     data-bus-fare="<%= bus.fare %>" 
+     data-max-passengers="<%= passengers %>" 
+     data-seat-layout="<%- JSON.stringify(seatLayout) %>">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Book Bus</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bus Information -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><%= bus.busName %></h5>
+                    <h6 class="card-subtitle mb-3 text-muted"><%= bus.busNumber %> - <%= bus.busType %></h6>
+                    
+                    <div class="mb-3">
+                        <p><strong>From:</strong> <%= bus.source %></p>
+                        <p><strong>To:</strong> <%= bus.destination %></p>
+                        <p><strong>Departure:</strong> <%= bus.formattedDepartureTime %></p>
+                        <p><strong>Arrival:</strong> <%= bus.formattedArrivalTime %></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>Available Seats:</strong> <%= bus.totalSeats - bus.bookedSeats %></p>
+                        <p><strong>Fare per Seat:</strong> ₹<%= bus.fare %></p>
+                        <p><strong>Duration:</strong> <%= bus.duration %> hours</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seat Selection -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Select Seats</h5>
+                    <p class="text-muted">Click on available seats to select them.</p>
+
+                    <div class="seat-layout mt-3">
+                        <% for(let row = 1; row <= Math.ceil(bus.totalSeats / 4); row++) { %>
+                            <div class="seat-row">
+                                <% for(let col = 1; col <= 4; col++) { %>
+                                    <% const seatNumber = (row - 1) * 4 + col; %>
+                                    <% if (seatNumber <= bus.totalSeats) { %>
+                                        <% const seatStatus = seatLayout[seatNumber] || 'available'; %>
+                                        <button type="button" 
+                                                class="seat <%= seatStatus %>" 
+                                                data-seat="<%= seatNumber %>"
+                                                <%= seatStatus === 'booked' ? 'disabled' : '' %>>
+                                            <%= seatNumber %>
+                                        </button>
+                                    <% } %>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex gap-3 mb-3">
+                            <div class="seat-legend">
+                                <div class="seat available"></div>
+                                <span>Available</span>
+                            </div>
+                            <div class="seat-legend">
+                                <div class="seat selected"></div>
+                                <span>Selected</span>
+                            </div>
+                            <div class="seat-legend">
+                                <div class="seat booked"></div>
+                                <span>Booked</span>
+                            </div>
+                        </div>
+                        <p><strong>Selected Seats:</strong> <span id="selectedSeatsCount">0</span></p>
+                        <p><strong>Total Amount:</strong> ₹<span id="totalAmount">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passenger Details Form -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Passenger Details</h5>
+                    <form id="bookingForm" action="/bookings" method="POST" class="needs-validation" novalidate>
+                        <input type="hidden" name="busId" value="<%= bus.id %>">
+                        <input type="hidden" name="seats" id="selectedSeats">
+                        <input type="hidden" name="passengerDetails" id="passengerDetails">
+                        <input type="hidden" name="travelDate" value="<%= date %>">
+
+                        <div id="passengerForms">
+                            <!-- Passenger forms will be dynamically added here -->
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary" id="submitBooking" disabled>
+                                Proceed to Payment
+                            </button>
+                            <a href="/buses/search?source=<%= bus.source %>&destination=<%= bus.destination %>&date=<%= date %>&passengers=<%= passengers %>" 
+                               class="btn btn-secondary">Back to Search</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.seat-layout {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.seat {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px solid #ccc;
+    background-color: #ffffff;
+    padding: 0;
+}
+
+.seat.available {
+    background-color: #ffffff;
+    color: #333;
+    border-color: #28a745;
+}
+
+.seat.selected {
+    background-color: #28a745;
+    color: white;
+    border-color: #1e7e34;
+}
+
+.seat.booked {
+    background-color: #dc3545;
+    color: white;
+    border-color: #bd2130;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.seat:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.seat:not(:disabled):hover {
+    transform: scale(1.05);
+}
+
+.seat-legend {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.seat-legend .seat {
+    width: 35px;
+    height: 35px;
+    margin: 0;
+    cursor: default;
+}
+</style>
+
+<script>
+window.onload = function() {
+    // Debug flag - set to true to see console logs
+    const DEBUG = true;
+    
+    // Initialize state
+    const state = {
+        selectedSeats: new Set(),
+        maxPassengers: parseInt('<%= passengers %>'),
+        baseFare: parseFloat('<%= bus.fare %>')
+    };
+
+    if (DEBUG) {
+        console.log('Initial state:', state);
+        console.log('Found seats:', document.querySelectorAll('.seat').length);
+    }
+
+    // Add click handlers to seats
+    document.querySelectorAll('.seat').forEach(seat => {
+        if (!seat.disabled) {
+            seat.onclick = function() {
+                const seatNumber = this.dataset.seat;
+                
+                if (DEBUG) {
+                    console.log('Clicked seat:', seatNumber);
+                    console.log('Current selected:', Array.from(state.selectedSeats));
+                }
+
+                // Toggle seat selection
+                if (state.selectedSeats.has(seatNumber)) {
+                    if (DEBUG) console.log('Deselecting seat:', seatNumber);
+                    state.selectedSeats.delete(seatNumber);
+                    this.classList.remove('selected');
+                    this.classList.add('available');
+                } else if (state.selectedSeats.size < state.maxPassengers) {
+                    if (DEBUG) console.log('Selecting seat:', seatNumber);
+                    state.selectedSeats.add(seatNumber);
+                    this.classList.remove('available');
+                    this.classList.add('selected');
+                } else {
+                    if (DEBUG) console.log('Max passengers reached:', state.maxPassengers);
+                    alert(`You can only select ${state.maxPassengers} seat(s)`);
+                    return;
+                }
+
+                updateDisplay();
+            };
+        }
+    });
+
+    function updateDisplay() {
+        const count = state.selectedSeats.size;
+        if (DEBUG) {
+            console.log('Updating display');
+            console.log('Selected count:', count);
+            console.log('Selected seats:', Array.from(state.selectedSeats));
+        }
+
+        // Update count and amount
+        document.getElementById('selectedSeatsCount').textContent = count;
+        document.getElementById('totalAmount').textContent = 
+            (count * state.baseFare).toLocaleString('en-IN');
+
+        // Update hidden input
+        document.getElementById('selectedSeats').value = 
+            JSON.stringify(Array.from(state.selectedSeats));
+
+        // Update submit button
+        document.getElementById('submitBooking').disabled = 
+            (count === 0 || count !== state.maxPassengers);
+
+        // Update passenger forms
+        updatePassengerForms();
+    }
+
+    function updatePassengerForms() {
+        const container = document.getElementById('passengerForms');
+        container.innerHTML = '';
+
+        Array.from(state.selectedSeats).forEach((seatNumber, index) => {
+            const formHtml = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Passenger ${index + 1} - Seat ${seatNumber}</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" name="passengerName${index}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Age</label>
+                                <input type="number" class="form-control" name="passengerAge${index}" min="1" max="120" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Gender</label>
+                                <select class="form-select" name="passengerGender${index}" required>
+                                    <option value="">Select gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" name="passengerPhone${index}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', formHtml);
+        });
+    }
+
+    // Form submission
+    document.getElementById('bookingForm').onsubmit = function(e) {
+        if (state.selectedSeats.size !== state.maxPassengers) {
+            e.preventDefault();
+            alert(`Please select exactly ${state.maxPassengers} seat(s)`);
+            return false;
+        }
+
+        const passengerDetails = Array.from(state.selectedSeats).map((seatNumber, index) => ({
+            seatNumber: parseInt(seatNumber),
+            name: document.querySelector(`[name="passengerName${index}"]`).value,
+            age: document.querySelector(`[name="passengerAge${index}"]`).value,
+            gender: document.querySelector(`[name="passengerGender${index}"]`).value,
+            phone: document.querySelector(`[name="passengerPhone${index}"]`).value
+        }));
+
+        document.getElementById('passengerDetails').value = JSON.stringify(passengerDetails);
+        return true;
+    };
+};
+</script>
+
+<%- include('../partials/footer') %> 

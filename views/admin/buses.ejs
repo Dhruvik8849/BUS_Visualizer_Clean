@@ -1,0 +1,277 @@
+<%
+    const content = `
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Manage Buses</h2>
+        </div>
+        <div class="col text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBusModal">
+                <i class="fas fa-plus"></i> Add New Bus
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Bus Number</th>
+                    <th>Bus Name</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Departure Time</th>
+                    <th>Arrival Time</th>
+                    <th>Total Seats</th>
+                    <th>Fare</th>
+                    <th>Bus Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${buses && buses.length > 0 ? buses.map(bus => `
+                    <tr>
+                        <td>${bus.busNumber}</td>
+                        <td>${bus.busName}</td>
+                        <td>${bus.source}</td>
+                        <td>${bus.destination}</td>
+                        <td>${new Date(bus.departureTime).toLocaleString()}</td>
+                        <td>${new Date(bus.arrivalTime).toLocaleString()}</td>
+                        <td>${bus.totalSeats}</td>
+                        <td>₹${bus.fare}</td>
+                        <td>${bus.busType}</td>
+                        <td>
+                            <span class="badge bg-${bus.isActive ? 'success' : 'danger'}">
+                                ${bus.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editBus('${bus.id}')" data-bs-toggle="modal" data-bs-target="#editBusModal">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteBus('${bus.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('') : `
+                    <tr>
+                        <td colspan="11" class="text-center">No buses found</td>
+                    </tr>
+                `}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Bus Modal -->
+    <div class="modal fade" id="addBusModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Bus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addBusForm" action="/admin/buses" method="POST">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Number</label>
+                                <input type="text" class="form-control" name="busNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Name</label>
+                                <input type="text" class="form-control" name="busName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Source</label>
+                                <input type="text" class="form-control" name="source" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Destination</label>
+                                <input type="text" class="form-control" name="destination" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" name="departureTime" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" name="arrivalTime" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Total Seats</label>
+                                <input type="number" class="form-control" name="totalSeats" min="1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fare (₹)</label>
+                                <input type="number" class="form-control" name="fare" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Type</label>
+                                <select class="form-control" name="busType" required>
+                                    <option value="AC">AC</option>
+                                    <option value="Non-AC">Non-AC</option>
+                                    <option value="Sleeper">Sleeper</option>
+                                    <option value="Semi-Sleeper">Semi-Sleeper</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-control" name="isActive" required>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Bus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bus Modal -->
+    <div class="modal fade" id="editBusModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Bus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editBusForm" method="POST">
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Number</label>
+                                <input type="text" class="form-control" name="busNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Name</label>
+                                <input type="text" class="form-control" name="busName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Source</label>
+                                <input type="text" class="form-control" name="source" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Destination</label>
+                                <input type="text" class="form-control" name="destination" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Departure Time</label>
+                                <input type="datetime-local" class="form-control" name="departureTime" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Arrival Time</label>
+                                <input type="datetime-local" class="form-control" name="arrivalTime" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Total Seats</label>
+                                <input type="number" class="form-control" name="totalSeats" min="1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fare (₹)</label>
+                                <input type="number" class="form-control" name="fare" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bus Type</label>
+                                <select class="form-control" name="busType" required>
+                                    <option value="AC">AC</option>
+                                    <option value="Non-AC">Non-AC</option>
+                                    <option value="Sleeper">Sleeper</option>
+                                    <option value="Semi-Sleeper">Semi-Sleeper</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-control" name="isActive" required>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Update Bus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    `;
+%>
+<%- include('../layouts/admin-layout', { content }) %>
+
+<script>
+async function editBus(busId) {
+    try {
+        const response = await fetch(`/admin/buses/${busId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch bus data');
+        }
+        const bus = await response.json();
+        
+        // Set form action
+        const form = document.getElementById('editBusForm');
+        form.action = `/admin/buses/${busId}?_method=PUT`;
+        
+        // Fill form with bus data
+        form.querySelector('input[name="busNumber"]').value = bus.busNumber;
+        form.querySelector('input[name="busName"]').value = bus.busName;
+        form.querySelector('input[name="source"]').value = bus.source;
+        form.querySelector('input[name="destination"]').value = bus.destination;
+        form.querySelector('input[name="departureTime"]').value = new Date(bus.departureTime).toISOString().slice(0, 16);
+        form.querySelector('input[name="arrivalTime"]').value = new Date(bus.arrivalTime).toISOString().slice(0, 16);
+        form.querySelector('input[name="totalSeats"]').value = bus.totalSeats;
+        form.querySelector('input[name="fare"]').value = bus.fare;
+        form.querySelector('select[name="busType"]').value = bus.busType;
+        form.querySelector('select[name="isActive"]').value = bus.isActive;
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading bus data');
+    }
+}
+
+function deleteBus(busId) {
+    if (confirm('Are you sure you want to delete this bus?')) {
+        fetch(`/admin/buses/${busId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Error deleting bus');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting bus');
+        });
+    }
+}
+</script> 

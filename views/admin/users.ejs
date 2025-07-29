@@ -1,0 +1,130 @@
+<%- include('../layouts/admin-layout') %>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Manage Users</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(user => { %>
+                        <tr>
+                            <td><%= user.id %></td>
+                            <td><%= user.firstName %> <%= user.lastName %></td>
+                            <td><%= user.email %></td>
+                            <td>
+                                <span class="badge bg-<%= user.role === 'admin' ? 'danger' : 'primary' %>">
+                                    <%= user.role %>
+                                </span>
+                            </td>
+                            <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="editUser('<%= user.id %>')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUser('<%= user.id %>')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editUserForm" method="POST">
+                <input type="hidden" name="_method" value="PUT">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editFirstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="editFirstName" name="firstName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="editLastName" name="lastName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="editPhone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editRole" class="form-label">Role</label>
+                        <select class="form-select" id="editRole" name="role" required>
+                            <option value="customer">Customer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+async function editUser(userId) {
+    try {
+        const response = await fetch(`/admin/users/${userId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+        }
+        const user = await response.json();
+        
+        // Set form action
+        const form = document.getElementById('editUserForm');
+        form.action = `/admin/users/${userId}?_method=PUT`;
+        
+        // Fill form with user data
+        form.querySelector('input[name="firstName"]').value = user.firstName;
+        form.querySelector('input[name="lastName"]').value = user.lastName;
+        form.querySelector('input[name="email"]').value = user.email;
+        form.querySelector('input[name="phone"]').value = user.phone || '';
+        form.querySelector('select[name="role"]').value = user.role;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading user data');
+    }
+}
+
+function deleteUser(userId) {
+    if (confirm('Are you sure you want to delete this user?')) {
+        // TODO: Implement delete user functionality
+        alert('Delete user: ' + userId);
+    }
+}
+</script> 

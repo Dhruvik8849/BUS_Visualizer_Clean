@@ -1,0 +1,302 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+    background-image: url('public/images/bus-1.jpg');
+    background-size: cover;
+}
+
+.container {
+    flex: 1;
+    padding: 2rem 0;
+}
+
+/* Header Styles */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(to right, #007bff, #0056b3);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white !important;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: white !important;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: auto;
+    background: linear-gradient(to right, #343a40, #212529);
+    color: white;
+    padding: 2rem 0;
+}
+
+footer a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+/* Card Styles */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 10px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(to right, #007bff, #0056b3);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to right, #0056b3, #004094);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: none;
+}
+
+/* Auth Pages Styles */
+.auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card .card-body {
+    padding: 2rem;
+}
+
+.auth-title {
+    color: #007bff;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Search Page Styles */
+.search-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-results {
+    margin-top: 2rem;
+}
+
+/* About Page Styles */
+.about-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.about-section h5 {
+    color: #007bff;
+    margin-bottom: 1rem;
+}
+
+/* Contact Page Styles */
+.contact-info {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.contact-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Seat Selection Styles */
+.seat-layout {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.seat {
+    width: 100%;
+    height: 40px;
+    margin: 5px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.seat.available {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+}
+
+.seat.available:hover {
+    background-color: #dee2e6;
+    transform: scale(1.05);
+}
+
+.seat.selected {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.seat.booked {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.seat-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 20px;
+}
+
+.seat-legend .seat {
+    width: 30px;
+    height: 30px;
+    margin: 0;
+}
+
+.seat-legend span {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Passenger Form Styles */
+.passenger-form {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.passenger-form .card-title {
+    color: #495057;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+/* Search Results Styles */
+.bus-card {
+    transition: transform 0.3s ease;
+}
+
+.bus-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.bus-card .badge {
+    font-size: 12px;
+    padding: 5px 10px;
+}
+
+.bus-card .price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.bus-card .price small {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .auth-container {
+        margin: 1rem;
+    }
+    
+    .search-form {
+        padding: 1rem;
+    }
+} 
